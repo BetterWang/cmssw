@@ -35,24 +35,12 @@
 
 //--------------------------------------------------------
 ZDCMonitorClient::ZDCMonitorClient(const edm::ParameterSet& ps){
-  initialize(ps);
-}
-
-ZDCMonitorClient::ZDCMonitorClient(){}
-
-//--------------------------------------------------------
-ZDCMonitorClient::~ZDCMonitorClient(){
-
-  if (debug_>0) std::cout << "ZDCMonitorClient: Exit ..." << std::endl;
-}
-
-//--------------------------------------------------------
-void ZDCMonitorClient::initialize(const edm::ParameterSet& ps){
-
+//  initialize(ps);
   irun_=0; ilumisec_=0; ievent_=0; itime_=0;
 
   maxlumisec_=0; minlumisec_=0;
 
+  ievt_ = 0;
 
   debug_ = ps.getUntrackedParameter<int>("debug", 0);
   if (debug_>0)
@@ -72,20 +60,7 @@ void ZDCMonitorClient::initialize(const edm::ParameterSet& ps){
       else std::cout << "-->enableMonitorDaemon switch is OFF" << std::endl;
     }
 
-  // get hold of back-end interface
-  dbe_ = edm::Service<DQMStore>().operator->();
-  if (debug_>1) dbe_->showDirStructure();   
-
-  // DQM ROOT input
   inputFile_ = ps.getUntrackedParameter<std::string>("inputFile", "");
-  if(inputFile_.size()!=0 && debug_>0) std::cout << "-->reading DQM input from " << inputFile_ << std::endl;
-  
-  if( ! enableMonitorDaemon_ ) {  
-    if( inputFile_.size() != 0 && dbe_!=NULL){
-      dbe_->open(inputFile_);
-      dbe_->showDirStructure();     
-    }
-  }
 
   //histogram reset freqency, update frequency, timeout
   resetEvents_ = ps.getUntrackedParameter<int>("resetFreqEvents",-1);   //number of real events
@@ -122,43 +97,130 @@ void ZDCMonitorClient::initialize(const edm::ParameterSet& ps){
   if (debug_>0) std::cout << "===>ZDCMonitor name = " << subsystemname << std::endl;
   rootFolder_ = subsystemname + "/";
 
-  return;
+
+}
+
+//ZDCMonitorClient::ZDCMonitorClient(){}
+
+//--------------------------------------------------------
+ZDCMonitorClient::~ZDCMonitorClient(){
+
+  if (debug_>0) std::cout << "ZDCMonitorClient: Exit ..." << std::endl;
 }
 
 //--------------------------------------------------------
+//void ZDCMonitorClient::initialize(const edm::ParameterSet& ps){
+//
+//  irun_=0; ilumisec_=0; ievent_=0; itime_=0;
+//
+//  maxlumisec_=0; minlumisec_=0;
+//
+//
+//  debug_ = ps.getUntrackedParameter<int>("debug", 0);
+//  if (debug_>0)
+//    std::cout << std::endl<<" *** ZDC Monitor Client ***" << std::endl<<std::endl;
+//
+//  if(debug_>1) std::cout << "ZDCMonitorClient: constructor...." << std::endl;
+//
+//  Online_ = ps.getUntrackedParameter<bool>("Online",false);
+//  // timing switch 
+//  showTiming_ = ps.getUntrackedParameter<bool>("showTiming",false);  
+//
+//  // MonitorDaemon switch
+//  enableMonitorDaemon_ = ps.getUntrackedParameter<bool>("enableMonitorDaemon", true);
+//  if (debug_>0)
+//    {
+//      if ( enableMonitorDaemon_ ) std::cout << "-->enableMonitorDaemon switch is ON" << std::endl;
+//      else std::cout << "-->enableMonitorDaemon switch is OFF" << std::endl;
+//    }
+//
+//  // get hold of back-end interface
+//  dbe_ = edm::Service<DQMStore>().operator->();
+//  if (debug_>1) dbe_->showDirStructure();   
+//
+//  // DQM ROOT input
+//  inputFile_ = ps.getUntrackedParameter<std::string>("inputFile", "");
+//  if(inputFile_.size()!=0 && debug_>0) std::cout << "-->reading DQM input from " << inputFile_ << std::endl;
+//  
+//  if( ! enableMonitorDaemon_ ) {  
+//    if( inputFile_.size() != 0 && dbe_!=NULL){
+//      dbe_->open(inputFile_);
+//      dbe_->showDirStructure();     
+//    }
+//  }
+//
+//  //histogram reset freqency, update frequency, timeout
+//  resetEvents_ = ps.getUntrackedParameter<int>("resetFreqEvents",-1);   //number of real events
+//  if(resetEvents_!=-1 && debug_>0) std::cout << "-->Will reset histograms every " << resetEvents_ <<" events." << std::endl;
+//  resetLS_ = ps.getUntrackedParameter<int>("resetFreqLS",-1);       //number of lumisections
+//  if(resetLS_!=-1 && debug_>0) std::cout << "-->Will reset histograms every " << resetLS_ <<" lumi sections." << std::endl;
+//
+//  // base Html output directory
+//  baseHtmlDir_ = ps.getUntrackedParameter<std::string>("baseHtmlDir", "");
+//  if (debug_>0)
+//    {
+//      if( baseHtmlDir_.size() != 0) 
+//	std::cout << "-->HTML output will go to baseHtmlDir = '" << baseHtmlDir_ << "'" << std::endl;
+//      else std::cout << "-->HTML output is disabled" << std::endl;
+//    }
+//  
+//  runningStandalone_ = ps.getUntrackedParameter<bool>("runningStandalone", false); // unnecessary? Or use for offline client processing?
+//  if (debug_>1)
+//    {
+//      if( runningStandalone_ ) std::cout << "-->standAlone switch is ON" << std::endl;
+//      else std::cout << "-->standAlone switch is OFF" << std::endl;
+//    }
+//
+//  // set parameters   
+//  prescaleEvt_ = ps.getUntrackedParameter<int>("diagnosticPrescaleEvt", -1);
+//  if (debug_>0) 
+//    std::cout << "===>DQM event prescale = " << prescaleEvt_ << " event(s)"<< std::endl;
+//
+//  prescaleLS_ = ps.getUntrackedParameter<int>("diagnosticPrescaleLS", -1);
+//  if (debug_>0) std::cout << "===>DQM lumi section prescale = " << prescaleLS_ << " lumi section(s)"<< std::endl;
+//
+//  // Base folder for the contents of this job
+//  std::string subsystemname = ps.getUntrackedParameter<std::string>("subSystemFolder", "ZDC") ;
+//  if (debug_>0) std::cout << "===>ZDCMonitor name = " << subsystemname << std::endl;
+//  rootFolder_ = subsystemname + "/";
+//
+//  return;
+//}
+//
+//--------------------------------------------------------
 // remove all MonitorElements and directories
-void ZDCMonitorClient::removeAllME(){
-  if (debug_>0) std::cout <<"<ZDCMonitorClient>removeAllME()"<<std::endl;
-  if(dbe_==NULL) return;
-
-  // go to top directory
-  dbe_->cd();
-  // remove MEs at top directory
-  dbe_->removeContents(); 
-  // remove directory (including subdirectories recursively)
-  if(dbe_->dirExists("Collector"))
-    dbe_->rmdir("Collector");
-  if(dbe_->dirExists("Summary"))
-    dbe_->rmdir("Summary");
-  return;
-}
+//void ZDCMonitorClient::removeAllME(){
+//  if (debug_>0) std::cout <<"<ZDCMonitorClient>removeAllME()"<<std::endl;
+//  if(dbe_==NULL) return;
+//
+//  // go to top directory
+//  dbe_->cd();
+//  // remove MEs at top directory
+//  dbe_->removeContents(); 
+//  // remove directory (including subdirectories recursively)
+//  if(dbe_->dirExists("Collector"))
+//    dbe_->rmdir("Collector");
+//  if(dbe_->dirExists("Summary"))
+//    dbe_->rmdir("Summary");
+//  return;
+//}
 
 //--------------------------------------------------------
 ///do a reset of all monitor elements...
-void ZDCMonitorClient::resetAllME() {
-  if (debug_>0) std::cout <<"<ZDCMonitorClient> resetAllME()"<<std::endl;
-   return;
-}
+//void ZDCMonitorClient::resetAllME() {
+//  if (debug_>0) std::cout <<"<ZDCMonitorClient> resetAllME()"<<std::endl;
+//   return;
+//}
 
 //--------------------------------------------------------
-void ZDCMonitorClient::beginJob(){
-
-  if( debug_>0 ) std::cout << "ZDCMonitorClient: beginJob" << std::endl;
-  
-  ievt_ = 0;
- 
-  return;
-}
+//void ZDCMonitorClient::beginJob(){
+//
+//  if( debug_>0 ) std::cout << "ZDCMonitorClient: beginJob" << std::endl;
+//  
+//  ievt_ = 0;
+// 
+//  return;
+//}
 
 //--------------------------------------------------------
 void ZDCMonitorClient::beginRun(const edm::Run& r, const edm::EventSetup& c) {
@@ -293,7 +355,7 @@ void ZDCMonitorClient::beginRun(const edm::Run& r, const edm::EventSetup& c) {
 
 
 //--------------------------------------------------------
-void ZDCMonitorClient::endJob(void) {
+void ZDCMonitorClient::dqmEndJob(void) {
 
   if( debug_>0 ) 
     std::cout << "ZDCMonitorClient: endJob, ievt = " << ievt_ << std::endl;

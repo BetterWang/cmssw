@@ -2,13 +2,13 @@
 #define ZDCMonitorClient_H
 
 
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/Run.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "DQMServices/Core/interface/DQMEDHarvester.h"
 
 #include "FWCore/Utilities/interface/CPUTimer.h"
 
@@ -19,38 +19,34 @@ class TH2F;
 class TH1F;
 class TFile;
 
-class ZDCMonitorClient : public edm::EDAnalyzer{
+class ZDCMonitorClient : public DQMEDHarvester{
   
 public:
   
   /// Constructors
-  ZDCMonitorClient();
+//  ZDCMonitorClient();
   ZDCMonitorClient(const edm::ParameterSet& ps);
   
   /// Destructor
   ~ZDCMonitorClient();
   
-  // Initialize
-  void initialize(const edm::ParameterSet& ps);
-  void offlineSetup();
-
   /// Analyze
   void analyze(void);
-  void analyze(const edm::Event& evt, const edm::EventSetup& es);
-  
-  /// BeginJob
-  void beginJob();
-  /// BeginRun
-  void beginRun(const edm::Run& r, const edm::EventSetup & c);
-  /// BeginLumiBlock
-  void beginLuminosityBlock(const edm::LuminosityBlock & l, const edm::EventSetup & c);
+//  void analyze(const edm::Event& evt, const edm::EventSetup& es);
 
   /// EndJob
-  void endJob(void);
+  void dqmEndJob(DQMStore::IBooker &, DQMStore::IGetter &) override;
+
+  
+  /// BeginRun
+  void beginRun(const edm::Run& r, const edm::EventSetup & c) override;
+  /// BeginLumiBlock
+//  void beginLuminosityBlock(const edm::LuminosityBlock & l, const edm::EventSetup & c);
+
   /// EndRun
-  void endRun(const edm::Run & r, const edm::EventSetup & c);
+  void endRun(const edm::Run & r, const edm::EventSetup & c) override;
   /// EndLumiBlock
-  void endLuminosityBlock(const edm::LuminosityBlock & l, const edm::EventSetup & c);
+//  void endLuminosityBlock(const edm::LuminosityBlock & l, const edm::EventSetup & c);
   
   /// HtmlOutput
   void htmlOutput(void);
@@ -75,6 +71,12 @@ public:
   bool prescale();
 
  private:
+
+  // Initialize
+  void initialize(const edm::ParameterSet& ps);
+  void offlineSetup();
+
+
   void removeAllME(void);
   void writeDBfile();
   /********************************************************/
