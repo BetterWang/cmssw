@@ -1,24 +1,9 @@
 #ifndef __HiEvtPlaneFlatten__
 #define __HiEvtPlaneFlatten__
-// -*- C++ -*-
-//
-// Package:    HiEvtPlaneFlatten
-// Class:      HiEvtPlaneFlatten
-// 
-
-//
-//
-// Original Author:  Stephen Sanders
-//         Created:  Mon Jun  7 14:40:12 EDT 2010
-//
-//
-
-// system include files
 #include <memory>
 #include <iostream>
 #include <string>
 
-// user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDProducer.h"
 
@@ -155,7 +140,7 @@ public:
     caloCentRefVal_ = 1.;
   }
 
-  double EtScale(double vtx, int centbin) {
+  double etScale(double vtx, int centbin)  {
     if(caloCentRefMinBin_<0) return 1.;
     int indx = getOffsetIndx(centbin,vtx);
     int refmin = getOffsetIndx(caloCentRefMinBin_,vtx);
@@ -169,11 +154,11 @@ public:
     return caloCentRefVal_/getPtDB(indx);
    }
 
-  double getW(double pt, double vtx, int centbin)
+  double getW(double pt, double vtx, int centbin) 
   {
     int indx = getOffsetIndx(centbin,vtx);
     if(indx>=0) {
-      double scale = EtScale(vtx,centbin);
+      double scale = etScale(vtx,centbin);
       double ptval = getPtDB(indx)*scale;
       double pt2val = getPt2DB(indx)*pow(scale,2);
       if(ptval>0) return pt*scale-pt2val/ptval;
@@ -194,7 +179,7 @@ public:
     return psi;
   }
 
-  double OffsetPsi(double s, double c, double w, uint m,  double vtx, int centbin)
+  double offsetPsi(double s, double c, double w, uint m,  double vtx, int centbin) 
   {
     int indx = getOffsetIndx(centbin,vtx);
     double snew = s-yoffDB_[indx];
