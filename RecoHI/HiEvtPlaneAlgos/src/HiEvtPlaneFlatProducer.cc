@@ -282,9 +282,11 @@ HiEvtPlaneFlatProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 
 	double psiOffset = angorig;
 
-	if(useOffsetPsi_) psiOffset = flat[indx]->offsetPsi(s,c,w,m,vzr_sell,bin);
-	double psiFlat = flat[indx]->getFlatPsi(psiOffset,vzr_sell,bin);
-	ep[indx]= new EvtPlane(indx, 2, psiFlat, flat[indx]->sumSin(), flat[indx]->sumCos(),rp->sumw(), rp->sumw2(), rp->sumPtOrEt(), rp->sumPtOrEt2(),  rp->mult());
+	const HiEvtPlaneFlatten* iFlatConst = flat[indx];
+
+	if(useOffsetPsi_) psiOffset = iFlatConst->offsetPsi(s,c,w,m,vzr_sell,bin);
+	double psiFlat = iFlatConst->getFlatPsi(psiOffset,vzr_sell,bin);
+	ep[indx]= new EvtPlane(indx, 2, psiFlat, iFlatConst->sumSin(), iFlatConst->sumCos(),rp->sumw(), rp->sumw2(), rp->sumPtOrEt(), rp->sumPtOrEt2(),  rp->mult());
 	ep[indx]->addLevel(0,rp->angle(), rp->sumSin(), rp->sumCos());
 	ep[indx]->addLevel(3,0., rp->sumSin(3), rp->sumCos(3));
 	if(useOffsetPsi_) ep[indx]->addLevel(1, psiOffset, s, c);
