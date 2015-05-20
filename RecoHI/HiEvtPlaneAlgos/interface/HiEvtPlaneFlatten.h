@@ -179,20 +179,27 @@ public:
     return psi;
   }
 
-  double offsetPsi(double s, double c, double w, uint m,  double vtx, int centbin) 
+  void updateEP(double s, double c, double w, uint m,  double vtx, int centbin, bool offset)
   {
-    int indx = getOffsetIndx(centbin,vtx);
-    double snew = s-yoffDB_[indx];
-    double cnew = c-xoffDB_[indx];
-    double psi = atan2(snew,cnew)/vorder_;
-    if((fabs(snew)<1e-4) && (fabs(cnew)<1e-4)) psi = 0.;
-    psi=bounds(psi);
-    psi=bounds2(psi);
-    soff_ = snew;
-    coff_ = cnew;
+    if ( offset ) {
+        int indx = getOffsetIndx(centbin,vtx);
+        soff_ = s-yoffDB_[indx];
+        coff_ = c-xoffDB_[indx];
+    } else {
+        soff_ = s;
+        coff_ = c;
+    }
     w_ = w;
     mult_ = m;
+    return;
+  }
 
+  double getOffsetPsi() const
+  {
+    double psi = atan2(soff_,coff_)/vorder_;
+    if((fabs(soff_)<1e-4) && (fabs(coff_)<1e-4)) psi = 0.;
+    psi=bounds(psi);
+    psi=bounds2(psi);
     return psi;
   }
 
@@ -339,7 +346,5 @@ private:
   uint mult_ ;
 
 };
-
-
 
 #endif
