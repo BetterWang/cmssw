@@ -66,6 +66,7 @@ class AfterBurnerGenerator : public edm::EDProducer{
 		edm::InputTag            modv4;
 		edm::InputTag            modv5;
 		edm::InputTag            modv6;
+		edm::EDGetTokenT<HepMCProduct> sourceToken_;
 
 		int		modmethod;
 		// 0, no mod
@@ -103,6 +104,7 @@ AfterBurnerGenerator::AfterBurnerGenerator(const edm::ParameterSet & p ):
 	sourceLabel(p.getParameter<edm::InputTag>("src")),
 	fixEP(p.getUntrackedParameter<bool>("fixEP",true))
 {
+	sourceToken_ = consumes<HepMCProduct>(sourceLabel);
 
 	modv1 = p.getParameter<edm::InputTag>("modv1");
 	modv2 = p.getParameter<edm::InputTag>("modv2");
@@ -169,7 +171,7 @@ void AfterBurnerGenerator::produce( Event& evt, const EventSetup& )
 
 
 	Handle<HepMCProduct> HepMCEvt ;
-	evt.getByLabel( sourceLabel, HepMCEvt ) ;
+	evt.getByToken( sourceToken_, HepMCEvt ) ;
 
 	HepMC::GenEvent * genevt = (HepMC::GenEvent *)HepMCEvt->GetEvent();
 	HepMC::HeavyIon * hi = genevt->heavy_ion();
