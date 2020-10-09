@@ -9,6 +9,7 @@ def applyDeepBtagging( process, postfix="" ) :
     from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
     process.load('PhysicsTools.PatAlgos.slimming.slimmedJets_cfi')
+    from RecoBTag.ONNXRuntime.pfParticleNetAK4_cff import _pfParticleNetAK4JetTagsAll as pfParticleNetAK4JetTagsAll
 
     # update slimmed jets to include DeepFlavour (keep same name)
     # make clone for DeepFlavour-less slimmed jets, so output name is preserved
@@ -31,7 +32,7 @@ def applyDeepBtagging( process, postfix="" ) :
           'pfDeepFlavourJetTags:probc',
           'pfDeepFlavourJetTags:probuds',
           'pfDeepFlavourJetTags:probg',
-       ],
+       ] + pfParticleNetAK4JetTagsAll,
        postfix = 'SlimmedDeepFlavour'+postfix,
        printWarning = False
     )
@@ -86,5 +87,4 @@ def applyDeepBtagging( process, postfix="" ) :
     addToProcessAndTask('slimmedJetsAK8', getattr(process,'selectedUpdatedPatJetsSlimmedAK8DeepTags'+postfix).clone(), process, task)
     # delete module not used anymore (slimmedJetsAK8 substitutes)
     delattr(process, 'selectedUpdatedPatJetsSlimmedAK8DeepTags'+postfix)
-
 
